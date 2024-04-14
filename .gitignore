@@ -1,0 +1,15 @@
+* .pytest_cache
+* .tox
+* .vscode
+* .vscode-test
+* .vscode-test-remote
+* .vscode-test-remote-ssh
+* .vscode-test-remote-wsl
+
+* .ipnb
+* .ipynb_checkpoints
+* .jupyter
+* .jupyter-jupyter
+
+* .mypy_cache
+* .pytest_cache

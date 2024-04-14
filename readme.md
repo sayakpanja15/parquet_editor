@@ -4,12 +4,16 @@ Parquet Editor is a PyQt5-based GUI application designed for editing, analyzing,
 
 ## Features
 
-- Directly edit cells in a Parquet file through an intuitive graphical interface.
-- Add, delete, or modify columns in Parquet files.
-- Load and save Parquet files efficiently.
-- Undo/Redo functionality to easily correct mistakes.
-- Support for various file formats including CSV, Excel, JSON, for exporting data.
-- Planned features: Asynchronous data operations, data visualization integration, and advanced data manipulation tools.
+    - Interactive Data Editing: Directly edit cells in Parquet files and other supported formats through an intuitive graphical interface.
+    - Column Management: Add, delete, or modify columns easily.
+    - Advanced Data Manipulation: Create pivot tables, perform data aggregation, and apply group-based operations directly within the GUI.
+    - Customizable User Settings: Save user preferences like default file paths and window sizes, enhancing usability and personalization.
+    - Multiple File Format Support: Load and save data in Parquet, CSV, Excel, and JSON formats.
+    - Undo/Redo Functionality: Easily correct mistakes with built-in undo/redo capabilities.
+    - Data Visualization: Integrated plotting tools to visualize data distributions and statistics.
+    - Asynchronous Data Operations: Planned feature to enhance performance by processing data operations in the background.
+    - Extensible Framework: Designed to be easily extended with more data manipulation tools and features.
+
 
 ## Installation
 
@@ -46,8 +50,11 @@ License
 
 ## Author
 
-**John**
+**John H** - *initial work*
+**GPT 4**
+**GitHub co-pilot**
+**Sayak** - *features and further functionality*
 
-**Sayak**
+#### All hail our AI Overlords
 
 - **GitHub**: [sayakpanja15](https://github.com/sayakpanja15)
