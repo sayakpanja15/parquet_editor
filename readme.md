@@ -50,7 +50,7 @@ License
 
 ## Author
 
-**John H** - *initial work*
+**avisual** - *initial work*
 
 **Sayak** - *features and further functionality*
 
