@@ -50,9 +50,8 @@ License
 
 ## Author
 
-**John H** - *initial work*
-**GPT 4**
-**GitHub co-pilot**
+**avisual** - *initial work*
+
 **Sayak** - *features and further functionality*
 
 #### All hail our AI Overlords
