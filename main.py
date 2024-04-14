@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QAction, QTableView, QDialog, QFormLayout, QLineEdit,
                              QComboBox, QPushButton, QVBoxLayout, QWidget, QMenu, QFileDialog, QMessageBox, QCheckBox,
-                             QLabel, QHBoxLayout, QStyledItemDelegate, QInputDialog)
+                          QLabel, QHBoxLayout, QStyledItemDelegate, QInputDialog)
 from PyQt5.QtCore import QAbstractTableModel, Qt, QThreadPool, QRunnable, QSettings, QModelIndex, QItemSelectionModel, QItemSelection
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QFormLayout, QPushButton
 
