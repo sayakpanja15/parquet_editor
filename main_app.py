@@ -130,7 +130,7 @@ class MainApp(QMainWindow):
         sub_window = self.active_subwindow()
         if sub_window:
             columns = sub_window.widget().model._data.columns.tolist()
-            dialog = SortFilterDialog(columns, sub_window.widget())
+            dialog = SortFilterDialog(columns, self, sub_window.widget())
             dialog.exec_()
 
     def apply_sort_filter(self, column, ascending, filter_cond):
@@ -154,51 +154,69 @@ class MainApp(QMainWindow):
         toolbar.addAction(delete_action)
 
     def open_new_subwindow(self):
-        sub_window = QMdiSubWindow()
-        app = App()
-        sub_window.setWidget(app)
-        sub_window.setWindowTitle("DataFrame Editor")
-        self.mdi_area.addSubWindow(sub_window)
-        sub_window.show()
+        try:
+            sub_window = QMdiSubWindow()
+            app = App()
+            sub_window.setWidget(app)
+            sub_window.setWindowTitle("DataFrame Editor")
+            self.mdi_area.addSubWindow(sub_window)
+            sub_window.showMaximized()  # Maximizing the subwindow
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to open new window: {str(e)}")
 
     def load(self):
-        sub_window = self.active_subwindow()
-        if sub_window:
-            filename, _ = QFileDialog.getOpenFileName(self, "Open File", "",
-                                                      "All Files (*);;CSV Files (*.csv);;Excel Files (*.xlsx);;JSON Files (*.json);;Parquet Files (*.parquet)")
+        try:
+            sub_window = self.active_subwindow()
+            if not sub_window:
+                self.open_new_subwindow()
+                sub_window = self.active_subwindow()
+
+            filename, _ = QFileDialog.getOpenFileName(self, "Open File", "", "All Files (*);;Parquet Files (*.parquet)")
             if filename:
                 sub_window.widget().model.load_data(filename)
-                # After loading data, update data exploration panel
                 dataframe = sub_window.widget().model._data
                 self.data_exploration_panel.update_stats(dataframe)
                 self.data_exploration_panel.update_summaries(dataframe)
-        else:
-            QMessageBox.warning(self, "No Active Window", "There is no active DataFrame window open.")
+                sub_window.showMaximized()  # Maximizing after loading data
+        except Exception as e:
+            QMessageBox.critical(self, "Load Error", f"An error occurred while loading the file: {str(e)}")
 
     def save(self):
-        sub_window = self.active_subwindow()
-        if sub_window:
-            filename, _ = QFileDialog.getSaveFileName(self, "Save File", "",
-                                                      "CSV Files (*.csv);;Excel Files (*.xlsx);;JSON Files (*.json);;Parquet Files (*.parquet)")
-            if filename:
-                sub_window.widget().model.save_data(filename)
-        else:
-            QMessageBox.warning(self, "No Active Window", "There is no active DataFrame window open.")
+        try:
+            sub_window = self.active_subwindow()
+            if sub_window:
+                filename, _ = QFileDialog.getSaveFileName(self, "Save File", "", "CSV Files (*.csv);;Excel Files (*.xlsx);;JSON Files (*.json);;Parquet Files (*.parquet)")
+                if filename:
+                    sub_window.widget().model.save_data(filename)
+            else:
+                QMessageBox.warning(self, "Error", "No active DataFrame window available.")
+        except Exception as e:
+            QMessageBox.critical(self, "Save Error", f"An error occurred while saving the file: {str(e)}")
 
     def cut(self):
-        sub_window = self.active_subwindow()
-        if sub_window:
-            sub_window.widget().cut()
+        try:
+            sub_window = self.active_subwindow()
+            if sub_window:
+                sub_window.widget().cut()
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"An error occurred during cutting: {str(e)}")
 
     def paste(self):
-        sub_window = self.active_subwindow()
-        if sub_window:
-            sub_window.widget().paste()
+        try:
+            sub_window = self.active_subwindow()
+            if sub_window:
+                sub_window.widget().paste()
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"An error occurred during pasting: {str(e)}")
 
     def delete(self):
-        sub_window = self.active_subwindow()
-        if sub_window:
-            sub_window.widget().delete()
+        try:
+            sub_window = self.active_subwindow()
+            if sub_window:
+                sub_window.widget().delete()
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"An error occurred during deletion: {str(e)}")
+
 
     def active_subwindow(self):
         return self.mdi_area.currentSubWindow()

@@ -86,14 +86,14 @@ class DataExploration(QWidget):
             self.update_stats()
             self.update_summaries()
 
-    def update_stats(self):
-        """Update the statistics in the quick stats panel for selected column."""
-        if self.data.empty:
+    def update_stats(self, dataframe):
+        """Update the statistics in the quick stats panel for the selected column."""
+        if dataframe.empty or self.selected_column not in dataframe.columns:
             self.stats_text.setText("No data available.")
             return
 
         try:
-            column_data = self.data[self.selected_column]
+            column_data = dataframe[self.selected_column]
             stats = {
                 'Mean': column_data.mean(),
                 'Median': column_data.median(),
@@ -107,14 +107,14 @@ class DataExploration(QWidget):
         except Exception as e:
             self.stats_text.setText(f"Error calculating statistics: {e}")
 
-    def update_summaries(self):
+    def update_summaries(self, dataframe):
         """Update the summaries in the column summaries panel."""
         if self.data.empty:
             self.summaries_text.setText("No data available.")
             return
 
         try:
-            column_data = self.data[self.selected_column]
+            column_data = dataframe[self.selected_column]
             summaries = {
                 'Unique Values': column_data.nunique(),
                 'Missing Values': column_data.isnull().sum(),

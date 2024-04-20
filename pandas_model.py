@@ -63,16 +63,10 @@ class SortFilterDialog(QDialog):
 
 
 class PandasModel(QAbstractTableModel):
-    """A model to interface a pandas DataFrame with a QTableView.
-
-    Attributes:
-        _data (pd.DataFrame): The DataFrame to display and manage.
-        clipboard (pd.DataFrame): Temporary storage for cut or copied rows.
-    """
+    """A model to interface a pandas DataFrame with a QTableView."""
     def __init__(self, data=pd.DataFrame()):
         super(PandasModel, self).__init__()
-        self._data = data
-        self.clipboard = pd.DataFrame()
+        self._data = data  # The DataFrame to display and manage.
 
     def rowCount(self, parent=None):
         return self._data.shape[0]
@@ -90,19 +84,28 @@ class PandasModel(QAbstractTableModel):
 
     def setData(self, index, value, role=Qt.EditRole):
         if index.isValid() and role == Qt.EditRole:
+            column = self._data.columns[index.column()]
             try:
-                self._data.iloc[index.row(), index.column()] = self.validate_data(index.column(), value)
+                validated_value = self.validate_data(column, value)
+                self._data.at[index.row(), column] = validated_value
                 self.dataChanged.emit(index, index, [Qt.EditRole])
                 return True
-            except ValueError:
+            except ValueError as e:
+                QMessageBox.critical(None, "Validation Error", f"Failed to set data: {str(e)}")
                 return False
         return False
 
     def validate_data(self, column, value):
-        """Validate data based on column type before setting it."""
-        if column == 0:  # Example: Column 0 expects integer values
+        """Validate data based on the column data type before setting it."""
+        dtype = self._data.dtypes[column]
+        if pd.api.types.is_integer_dtype(dtype):
             return int(value)
-        return value  # Default: accept the value as is
+        elif pd.api.types.is_float_dtype(dtype):
+            return float(value)
+        elif pd.api.types.is_string_dtype(dtype):
+            return str(value)
+        else:
+            return value  # This defaults to a direct assignment for other types.
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
@@ -113,50 +116,54 @@ class PandasModel(QAbstractTableModel):
         return super().flags(index) | Qt.ItemIsEditable
 
     def remove_row(self, position):
-        """Remove a row from the model."""
-        self.beginRemoveRows(QModelIndex(), position, position)
-        self._data.drop(self._data.index[position], axis=0, inplace=True)
-        self.endRemoveRows()
-
-    def cut_rows(self, rows):
-        """Cut specified rows and store them in the clipboard."""
-        self.clipboard = self._data.iloc[rows].copy()
-        self._data.drop(self._data.index[rows], inplace=True)
-        self.layoutChanged.emit()
-
-    def copy_rows(self, rows):
-        """Copy specified rows to the clipboard."""
-        self.clipboard = self._data.iloc[rows].copy()
+        try:
+            self.beginRemoveRows(QModelIndex(), position, position)
+            self._data.drop(self._data.index[position], axis=0, inplace=True)
+            self.endRemoveRows()
+        except Exception as e:
+            QMessageBox.critical(None, "Error", f"Failed to remove row: {str(e)}")
 
     def add_column(self, column_name, default_value=None):
-        self._data[column_name] = default_value
-        self.layoutChanged.emit()
+        try:
+            self._data[column_name] = default_value
+            self.layoutChanged.emit()
+        except Exception as e:
+            QMessageBox.critical(None, "Column Add Error", f"Failed to add column: {str(e)}")
+
 
     def delete_column(self, column_name):
-        self._data.drop(column_name, axis=1, inplace=True)
-        self.layoutChanged.emit()
+        try:
+            if column_name not in self._data.columns:
+                QMessageBox.warning(None, "Column Delete Error", "Column not found in the data.")
+                return
+            self._data.drop(column_name, axis=1, inplace=True)
+            self.layoutChanged.emit()
+        except Exception as e:
+            QMessageBox.critical(None, "Column Delete Error", f"Failed to delete column: {str(e)}")
 
     def rename_column(self, old_name, new_name):
-        self._data.rename(columns={old_name: new_name}, inplace=True)
-        self.layoutChanged.emit()
-
-    def duplicate_rows(self, rows):
-        duplicates = self._data.iloc[rows].copy()
-        self._data = pd.concat([self._data, duplicates], ignore_index=True)
-        self.layoutChanged.emit()
+        try:
+            if old_name not in self._data.columns:
+                QMessageBox.warning(None, "Column Rename Error", "Column not found in the data.")
+                return
+            self._data.rename(columns={old_name: new_name}, inplace=True)
+            self.layoutChanged.emit()
+        except Exception as e:
+            QMessageBox.critical(None, "Column Rename Error", f"Failed to rename column: {str(e)}")
 
     def paste_rows(self, position):
-        """Paste clipboard rows into the specified position in the DataFrame."""
-        if not self.clipboard.empty:
-            num_rows = len(self.clipboard)
-            self.beginInsertRows(QModelIndex(), position, position + num_rows - 1)
-            upper_part = self._data.iloc[:position]
-            lower_part = self._data.iloc[position:]
-            self._data = pd.concat([upper_part, self.clipboard, lower_part]).reset_index(drop=True)
-            self.endInsertRows()
+        try:
+            if not self.clipboard.empty:
+                num_rows = len(self.clipboard)
+                self.beginInsertRows(QModelIndex(), position, position + num_rows - 1)
+                upper_part = self._data.iloc[:position]
+                lower_part = self._data.iloc[position:]
+                self._data = pd.concat([upper_part, self.clipboard, lower_part]).reset_index(drop=True)
+                self.endInsertRows()
+        except Exception as e:
+            QMessageBox.critical(None, "Paste Error", f"Failed to paste rows: {str(e)}")
 
     def load_data(self, filename):
-        """Load data from a file into the DataFrame."""
         try:
             if filename.endswith('.csv'):
                 self._data = pd.read_csv(filename)
@@ -170,9 +177,7 @@ class PandasModel(QAbstractTableModel):
         except Exception as e:
             QMessageBox.critical(None, "File Load Error", f"An error occurred while loading the file: {str(e)}")
 
-
     def save_data(self, filename):
-        """Save the DataFrame data to a file."""
         try:
             if filename.endswith('.csv'):
                 self._data.to_csv(filename)
@@ -186,15 +191,15 @@ class PandasModel(QAbstractTableModel):
             QMessageBox.critical(None, "File Save Error", f"An error occurred while saving the file: {str(e)}")
 
     def sort_and_filter(self, column, ascending=True, filter_condition=None):
-        # Sorting
-        self._data.sort_values(by=column, ascending=ascending, inplace=True)
-
-        # Filtering
-        if filter_condition:
-            try:
-                self._data = self._data.query(f"{column}{filter_condition}")
-            except Exception as e:
-                QMessageBox.critical(None, "Filter Error", f"An error occurred while filtering: {str(e)}")
-
-        self.layoutChanged.emit()
-
+        try:
+            if column not in self._data.columns:
+                QMessageBox.warning(None, "Sort Error", "Column not found in the data.")
+                return
+            # Sorting
+            self._data.sort_values(by=column, ascending=ascending, inplace=True)
+            # Filtering
+            if filter_condition:
+                self._data = self._data.query(f"{column} {filter_condition}")
+            self.layoutChanged.emit()
+        except Exception as e:
+            QMessageBox.critical(None, "Sort/Filter Error", f"An error occurred while sorting/filtering: {str(e)}")
