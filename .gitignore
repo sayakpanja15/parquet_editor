@@ -15,3 +15,8 @@
 * .pytest_cache
 
 * .venv
+* .idea
+* .vscode
+* .vscode-test
+
+* .ipynb
